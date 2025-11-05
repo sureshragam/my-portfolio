@@ -19,7 +19,28 @@ public class CertificateService {
 	}
 
 	public Certificate postCertificate(Certificate certificate) {
-		return cs.save(certificate);
+		try {
+			return cs.save(certificate);
+		} catch (Exception e) {
+			throw new IllegalStateException("Failed to save the certificate", e);
+		}
+	}
+
+	public Certificate updateCertificate(String id, Certificate certificate) {
+		return cs.findById(id).map(existingCertificate -> {
+			existingCertificate.setName(certificate.getName());
+			existingCertificate.setUrl(certificate.getUrl());
+			existingCertificate.setAlt(certificate.getAlt());
+			return cs.save(existingCertificate);
+		}).orElseThrow(() -> new IllegalStateException("Certificate with id " + id + " not found"));
+	}
+
+	public void deleteCertificate(String id) {
+		if (cs.existsById(id)) {
+			cs.deleteById(id);
+		} else {
+			throw new IllegalStateException("Certificate with id " + id + " not found");
+		}
 	}
 
 	// public List<Certificate> getCertificates() {
